@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hacker C2 Panel</title>
+    <style>
+        body { background: #0a0a0a; color: #00ff00; font-family: 'Courier New'; }
+        .session { border: 1px solid #0f0; padding: 10px; margin: 5px; }
+        button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px 10px; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>🔴 ACTIVE SESSIONS</h1>
+    <div id="sessions"></div>
+
+    <script>
+        const socket = io();
+        const sessionsDiv = document.getElementById('sessions');
+
+        socket.on('sessions_update', (sessions) => {
+            let html = '';
+            sessions.forEach(sid => {
+                html += `<div class="session">
+                    <strong>${sid}</strong><br>
+                    <button onclick="sendCommand('${sid}', 'flash')">💥 FLASH</button>
+                    <button onclick="sendCommand('${sid}', 'shake')">🌀 SHAKE</button>
+                    <button onclick="sendCommand('${sid}', 'message', 'ТЫ НЕ ОДИН!')">📩 SCARE</button>
+                    <button onclick="sendCommand('${sid}', 'release')">🔓 RELEASE</button>
+                </div>`;
+            });
+            sessionsDiv.innerHTML = html || '<p>No active sessions</p>';
+        });
+
+        function sendCommand(sessionId, cmd, payload = '') {
+            fetch('/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({session_id: sessionId, command: cmd, payload: payload})
+            });
+        }
+    </script>
+</body>
+</html>
